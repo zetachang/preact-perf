@@ -290,7 +290,7 @@ Suites.push({
 Suites.push({
     name: 'Mercury',
     url: 'todomvc/mercury/index.html',
-    version: '3.1.6',
+    version: '3.1.7',
     prepare: function (runner, contentWindow, contentDocument) {
         return runner.waitForElement('#new-todo').then(function (element) {
             element.focus();
@@ -301,7 +301,7 @@ Suites.push({
         new BenchmarkTestStep('Adding' + numberOfItemsToAdd + 'Items', function (newTodo, contentWindow, contentDocument) {
             for (var i = 0; i < numberOfItemsToAdd; i++) {
                 var keydownEvent = document.createEvent('Event');
-                keydownEvent.initEvent('input', true, true);
+                keydownEvent.initEvent('keydown', true, true);
                 keydownEvent.keyCode = 13; // VK_ENTER
                 newTodo.value = 'Something to do ' + i;
                 newTodo.dispatchEvent(keydownEvent);
