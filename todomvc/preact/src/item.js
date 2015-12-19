@@ -7,34 +7,41 @@ const ENTER_KEY = 13;
 @bind
 export default class TodoItem extends Component {
 	handleSubmit() {
-		let val = this.state.editText.trim();
+		let val = this.state.editText.trim(),
+			{ todo } = this.props;
 		if (val) {
-			this.props.onSave(val);
+			this.props.onSave(todo, val);
 			this.setState({ editText: val });
 		}
 		else {
-			this.props.onDestroy();
+			this.props.onDestroy(todo);
 		}
 	}
 
 	handleEdit() {
-		this.props.onEdit();
-		this.setState({ editText: this.props.todo.title });
+		let { todo } = this.props;
+		this.props.onEdit(todo);
+		this.setState({ editText: todo.title });
 	}
 
 	toggle(e) {
-		this.props.onToggle();
+		this.props.onToggle(this.props.todo);
 		e.preventDefault();
 	}
 
 	handleKeyDown(e) {
+		let { todo } = this.props;
 		if (e.which===ESCAPE_KEY) {
-			this.setState({ editText: this.props.todo.title });
-			this.props.onCancel(e);
+			this.setState({ editText: todo.title });
+			this.props.onCancel(todo);
 		}
 		else if (e.which===ENTER_KEY) {
-			this.handleSubmit(e);
+			this.handleSubmit(todo);
 		}
+	}
+
+	destroy() {
+		this.props.onDestroy(this.props.todo);
 	}
 
 	// shouldComponentUpdate({ todo, editing, editText }) {
@@ -50,7 +57,7 @@ export default class TodoItem extends Component {
 		if (node) node.focus();
 	}
 
-	render({ todo:{ title, completed }, onToggle, onDestroy, editing }, { editText }) {
+	render({ todo:{ title, completed }, editing }, { editText }) {
 		return (
 			<li class={{ completed, editing }}>
 				<div class="view">
@@ -61,7 +68,7 @@ export default class TodoItem extends Component {
 						onClick={this.toggle}
 					/>
 					<label onDblClick={this.handleEdit}>{title}</label>
-					<button class="destroy" onClick={onDestroy} />
+					<button class="destroy" onClick={this.destroy} />
 				</div>
 				<input
 					class="edit"

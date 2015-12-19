@@ -22,7 +22,8 @@ export default class App extends Component {
 	constructor() {
 		super();
 		this.model = new TodoModel('preact-todos');
-		this.model.subscribe( () => this.setState({}) );
+		this.state = { todos: this.model.todos };
+		this.model.subscribe( () => this.setState({ todos: this.model.todos }) );
 	}
 
 	getInitialState() {
@@ -48,25 +49,24 @@ export default class App extends Component {
 		}
 	}
 
-	toggleAll(event) {
-		let checked = event.target.checked;
-		this.model.toggleAll(checked);
+	toggleAll(e) {
+		this.model.toggleAll(e.target.checked);
 	}
 
-	toggle(todoToToggle) {
-		this.model.toggle(todoToToggle);
+	toggle(todo) {
+		this.model.toggle(todo);
 	}
 
 	destroy(todo) {
 		this.model.destroy(todo);
 	}
 
-	edit(todo) {
-		this.setState({ editing: todo.id });
+	edit({ id }) {
+		this.setState({ editing: id });
 	}
 
-	save(todoToSave, text) {
-		this.model.save(todoToSave, text);
+	save(todo, text) {
+		this.model.save(todo, text);
 		this.setState({ editing: null });
 	}
 
@@ -78,9 +78,8 @@ export default class App extends Component {
 		this.model.clearCompleted();
 	}
 
-	render({ }, { nowShowing=ALL_TODOS, newTodo, editing }) {
-		let { todos } = this.model,
-			shownTodos = todos.filter( FILTERS[nowShowing] ),
+	render({ }, { nowShowing=ALL_TODOS, todos, newTodo, editing }) {
+		let shownTodos = todos.filter( FILTERS[nowShowing] ),
 			activeTodoCount = todos.reduce( (a, todo) => a + (todo.completed ? 0 : 1), 0),
 			completedCount = todos.length - activeTodoCount;
 
@@ -112,11 +111,11 @@ export default class App extends Component {
 							{ shownTodos.map( todo => (
 								<TodoItem
 									todo={todo}
-									onToggle={this.toggle.bind(this, todo)}
-									onDestroy={this.destroy.bind(this, todo)}
-									onEdit={this.edit.bind(this, todo)}
+									onToggle={this.toggle}
+									onDestroy={this.destroy}
+									onEdit={this.edit}
 									editing={editing === todo.id}
-									onSave={this.save.bind(this, todo)}
+									onSave={this.save}
 									onCancel={this.cancel}
 								/>
 							)) }

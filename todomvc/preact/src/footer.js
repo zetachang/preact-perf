@@ -7,6 +7,11 @@ const ACTIVE_TODOS = 'active';
 const COMPLETED_TODOS = 'completed';
 
 export default class TodoFooter extends Component {
+	shouldComponentUpdate(props) {
+		for (let i in props) if (props[i]!==this.props[i]) return true;
+		return false;
+	}
+
 	render({ nowShowing, count, completedCount, onClearCompleted }) {
 		return (
 			<footer id="footer">

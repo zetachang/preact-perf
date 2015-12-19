@@ -5,12 +5,15 @@
 <script src="resources/benchmark-runner.js" defer></script>
 <script src="resources/tests.js" defer></script>
 <style>
-iframe { border: 1px solid black; }
+html, body { font:12px arial,sans-serif; margin:0; min-height:100%; overflow:hidden; }
+iframe { border: 1px solid black;  }
 ol { list-style: none; margin: 0; padding: 0; }
-ol ol { margin-left: 2em; list-position: outside; }
+nav>ol { position:absolute; top:2em; bottom:0; left:0; width:100%; overflow:auto; }
+nav>ol>li { padding: 5px; border-bottom:1px solid #CCC; }
+ol ol { margin-left: 2em; color:#888; list-position: outside; }
 .running { text-decoration: underline; }
 .ran { color: grey; }
-nav { position: absolute; right: 10px; }
+nav { position:absolute; right:0; top:0; width:250px; height:100%; overflow:auto; z-index:500; background:#EEE; }
 </style>
 </head>
 <body>

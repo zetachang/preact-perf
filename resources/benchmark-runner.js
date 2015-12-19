@@ -10,7 +10,7 @@ SimplePromise.prototype.then = function (callback) {
         throw "SimplePromise doesn't support multiple calls to then";
     this._callback = callback;
     this._chainedPromise = new SimplePromise;
-    
+
     if (this._resolved)
         this.resolve(this._resolvedValue);
 
