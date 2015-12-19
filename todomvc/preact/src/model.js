@@ -4,8 +4,6 @@ export default class TodoModel {
 	constructor(key) {
 		this.key = key;
 		this.todos = store(key) || [];
-		this.queueSave = ::this.queueSave;
-		this.save = ::this.save;
 		this.onChanges = [];
 	}
 
@@ -14,17 +12,15 @@ export default class TodoModel {
 	}
 
 	inform() {
+		for (let i=this.onChanges.length; i--; ) this.onChanges[i]();
 		if (!this.timer) this.queueSave();
-		this.onChanges.forEach( cb => cb() );
 	}
 
 	queueSave() {
-		this.timer = setTimeout(this.save, 500);
-	}
-
-	save() {
-		this.timer = null;
-		store(this.key, this.todos);
+		this.timer = setTimeout( () => {
+			this.timer = null;
+			store(this.key, this.todos);
+		}, 500);
 	}
 
 	addTodo(title) {
