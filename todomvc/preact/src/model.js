@@ -1,9 +1,12 @@
 import { uuid, store } from './util';
 
+// note: commented out localStorage persistence as it mucks up tests.
+
 export default class TodoModel {
 	constructor(key) {
 		this.key = key;
-		this.todos = store(key) || [];
+		// this.todos = store(key) || [];
+		this.todos = [];
 		this.onChanges = [];
 	}
 
@@ -12,16 +15,16 @@ export default class TodoModel {
 	}
 
 	inform() {
-		for (let i=this.onChanges.length; i--; ) this.onChanges[i]();
-		if (!this.timer) this.queueSave();
+		for (let i=this.onChanges.length; i--; ) this.onChanges[i](this);
+		// if (!this.timer) this.queueSave();
 	}
 
-	queueSave() {
-		this.timer = setTimeout( () => {
-			this.timer = null;
-			store(this.key, this.todos);
-		}, 500);
-	}
+	// queueSave() {
+	// 	this.timer = setTimeout( () => {
+	// 		this.timer = null;
+	// 		store(this.key, this.todos);
+	// 	}, 500);
+	// }
 
 	addTodo(title) {
 		this.todos = this.todos.concat({

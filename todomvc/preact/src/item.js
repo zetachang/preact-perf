@@ -4,8 +4,17 @@ import bind from 'autobind-decorator';
 const ESCAPE_KEY = 27;
 const ENTER_KEY = 13;
 
+function shallowEqual(a, b) {
+	for (let i in a) if (a[i]!==b[i]) return false;
+	return true;
+};
+
 @bind
 export default class TodoItem extends Component {
+	shouldComponentUpdate(props, state) {
+		return !shallowEqual(props, this.props) || !shallowEqual(state, this.state);
+	}
+
 	handleSubmit() {
 		let val = this.state.editText.trim(),
 			{ todo } = this.props;
@@ -44,16 +53,8 @@ export default class TodoItem extends Component {
 		this.props.onDestroy(this.props.todo);
 	}
 
-	// shouldComponentUpdate({ todo, editing, editText }) {
-	// 	return (
-	// 		todo !== this.props.todo ||
-	// 		editing !== this.props.editing ||
-	// 		editText !== this.state.editText
-	// 	);
-	// }
-
 	componentDidUpdate({ editing }) {
-		let node = this.base && this.base.querySelector('.edit');
+		let node = editing && this.base && this.base.querySelector('.edit');
 		if (node) node.focus();
 	}
 

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "autobind-decorator": "^1.3.2",
-    "preact": "^2.3.0",
-    "preact-router": "^1.0.0"
+    "preact": "^4.1.1",
+    "preact-router": "^1.2.4"
   }
 }

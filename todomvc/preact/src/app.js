@@ -21,9 +21,9 @@ const FILTERS = {
 export default class App extends Component {
 	constructor() {
 		super();
-		this.model = new TodoModel('preact-todos');
+		this.model = new TodoModel('preact-perf-todos');
 		this.state = { todos: this.model.todos };
-		this.model.subscribe( () => this.setState({ todos: this.model.todos }) );
+		this.model.subscribe( ({ todos }) => this.setState({ todos }) );
 	}
 
 	getInitialState() {
@@ -110,6 +110,7 @@ export default class App extends Component {
 						<ul id="todo-list">
 							{ shownTodos.map( todo => (
 								<TodoItem
+									key={todo.id}
 									todo={todo}
 									onToggle={this.toggle}
 									onDestroy={this.destroy}
