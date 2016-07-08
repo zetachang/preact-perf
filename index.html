@@ -1,171 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DoYouEvenBench</title>
+<title>TodoMVC Benchmark</title>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script src="resources/benchmark-runner.js" defer></script>
 <script src="resources/tests.js" defer></script>
 <style>
-html, body { font:12px arial,sans-serif; margin:0; min-height:100%; overflow:hidden; }
-iframe { border: 1px solid black;  }
-ol { list-style: none; margin: 0; padding: 0; }
-nav>ol { position:absolute; top:2em; bottom:0; left:0; width:100%; overflow:auto; }
-nav>ol>li { padding: 5px; border-bottom:1px solid #CCC; }
-ol ol { margin-left: 2em; color:#888; list-position: outside; }
+body {
+  font-family: 'Lucida Grande','Trebuchet MS','Bitstream Vera Sans',Verdana,Helvetica,sans-serif;
+  background-color: rgb(253, 253, 253);
+}
+iframe { border: 1px solid black; }
+button { margin: 15px 5px; }
+ol { list-style: none; margin: 5px 0; padding: 0; }
+ol ol { margin-left: 2em; list-position: outside; }
 .running { text-decoration: underline; }
 .ran { color: grey; }
-nav { position:absolute; right:0; top:0; width:250px; height:100%; overflow:auto; z-index:500; background:#EEE; }
+nav { position: absolute; right: 10px; }
+.header { display: inline-block }
+.logo { float: left}
+.title { float: left; line-height: 0; padding-left: 8px;}
 </style>
 </head>
 <body>
-<script>
-
-var runs = [],
-    res = document.getElementById('results'),
-    timesRan = 0,
-    runButton
-
-function formatTestName(suiteName, testName) {
-    return suiteName + (testName ? '/' + testName : '');
-}
-
-function createUIForSuites(suites, onstep, onrun) {
-    var control = document.createElement('nav');
-    var ol = document.createElement('ol');
-    var checkboxes = [];
-    for (var suiteIndex = 0; suiteIndex < suites.length; suiteIndex++) {
-        var suite = suites[suiteIndex];
-        var li = document.createElement('li');
-        var checkbox = document.createElement('input');
-        checkbox.id = suite.name;
-        checkbox.type = 'checkbox';
-        checkbox.checked = true;
-        checkbox.onchange = (function (suite, checkbox) { return function () { suite.disabled = !checkbox.checked; } })(suite, checkbox);
-        checkbox.onchange();
-        checkboxes.push(checkbox);
-
-        li.appendChild(checkbox);
-        var label = document.createElement('label');
-        label.appendChild(document.createTextNode(formatTestName(suite.name) + ' ' + suite.version));
-        li.appendChild(label);
-        label.htmlFor = checkbox.id;
-
-        var testList = document.createElement('ol');
-        for (var testIndex = 0; testIndex < suite.tests.length; testIndex++) {
-            var testItem = document.createElement('li');
-            var test = suite.tests[testIndex];
-            var anchor = document.createElement('a');
-            anchor.id = suite.name + '-' + test.name;
-            test.anchor = anchor;
-            anchor.appendChild(document.createTextNode(formatTestName(suite.name, test.name)));
-            testItem.appendChild(anchor);
-            testList.appendChild(testItem);
-        }
-        li.appendChild(testList);
-
-        ol.appendChild(li);
-    }
-
-    control.appendChild(ol);
-
-    var button = document.createElement('button');
-    button.textContent = 'Step';
-    button.onclick = onstep;
-    control.appendChild(button);
-
-    var button = runButton = document.createElement('button');
-    button.textContent = 'Run';
-    button.onclick = onrun;
-    control.appendChild(button);
-
-    return control;
-}
-
-function startTest() {
-
-    var match = window.location.search.match(/[\?&]r=(\d+)/),
-        timesToRun = match ? +(match[1]) : 1
-
-    var runner = new BenchmarkRunner(Suites, {
-        willRunTest: function (suite, test) {
-            test.anchor.classList.add('running');
-        },
-        didRunTest: function (suite, test) {
-            var classList = test.anchor.classList;
-            classList.remove('running');
-            classList.add('ran');
-        },
-        didRunSuites: function (measuredValues) {
-            var results = '';
-            var total = 0; // FIXME: Compute the total properly.
-            for (var suiteName in measuredValues) {
-                var suiteResults = measuredValues[suiteName];
-                for (var testName in suiteResults.tests) {
-                    var testResults = suiteResults.tests[testName];
-                    for (var subtestName in testResults) {
-                        results += suiteName + ' : ' + testName + ' : ' + subtestName
-                            + ': ' + testResults[subtestName] + ' ms\n';
-                    }
-                }
-                results += suiteName + ' : ' + suiteResults.total + ' ms\n';
-                total += suiteResults.total;
-            }
-            results += 'Run ' + (runs.length + 1) +'/' + timesToRun + ' - Total : ' + total + ' ms\n';
-
-            if (!results)
-                return;
-
-            console.log(results)
-
-            runs.push(measuredValues)
-            timesRan++
-            if (timesRan >= timesToRun) {
-                timesRan = 0
-                reportAverage()
-            } else {
-                setTimeout(function () {
-                    runButton.click()
-                }, 0)
-            }
-        }
-    });
-
-    var currentState = null;
-    function callNextStep(state) {
-        runner.step(state).then(function (newState) {
-            currentState = newState;
-            if (newState)
-                callNextStep(newState);
-        });
-    }
-
-    // Don't call step while step is already executing.
-    document.body.appendChild(createUIForSuites(Suites,
-        function () { runner.step(currentState).then(function (state) { currentState = state; }); },
-        function () {
-            callNextStep(currentState);
-        }));
-
-    function reportAverage () {
-        var results = {}
-        runs.forEach(function (runData) {
-            for (var key in runData) {
-                results[key] = results[key] || 0
-                results[key] += runData[key].total
-            }
-        })
-        for (var key in results) {
-            results[key] /= runs.length
-        }
-        var res = JSON.stringify(results, null, 4),
-            pre = document.createElement('pre')
-        pre.textContent = runs.length + ' runs average:\n' + res + '\n'
-            + 'See console output for more details.'
-        document.body.appendChild(pre)
-    }
-}
-
-window.addEventListener('load', startTest);
-
-</script>
+  <div class="header">
+    <a class="logo" href="https://github.com/rabbots/todomvc-perf-comparison">
+      <svg aria-hidden="true" class="octicon octicon-mark-github" height="28" version="1.1" viewBox="0 0 16 16" width="28"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59 0.4 0.07 0.55-0.17 0.55-0.38 0-0.19-0.01-0.82-0.01-1.49-2.01 0.37-2.53-0.49-2.69-0.94-0.09-0.23-0.48-0.94-0.82-1.13-0.28-0.15-0.68-0.52-0.01-0.53 0.63-0.01 1.08 0.58 1.23 0.82 0.72 1.21 1.87 0.87 2.33 0.66 0.07-0.52 0.28-0.87 0.51-1.07-1.78-0.2-3.64-0.89-3.64-3.95 0-0.87 0.31-1.59 0.82-2.15-0.08-0.2-0.36-1.02 0.08-2.12 0 0 0.67-0.21 2.2 0.82 0.64-0.18 1.32-0.27 2-0.27 0.68 0 1.36 0.09 2 0.27 1.53-1.04 2.2-0.82 2.2-0.82 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38C13.71 14.53 16 11.53 16 8 16 3.58 12.42 0 8 0z"></path></svg></a>
+    <h3 class="title">TodoMVC Benchmark v1.0.0</h3>
+  </div><hr>
+  <div id="analysis" style="float:left; display: none;">
+    <div id="barchart_values"></div>
+  </div>
+  <script src="resources/manager.js"></script>
 </body>
 </html>
